@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de monedas</title>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="allContainer">
+        <div class="titleContainer">
+            <p>__________________________________________</p>
+            <h2>Conversor de monedas Nacional</h1>
+            <p>__________________________________________</p>
+        </div>
+        <div class="convertidorContainer">
+            <div class="pesosCLP">
+                <h3>Pesos CLP</h2>
+                <input type="text" id="amount" placeholder="Ingrese el monto en CLP">
+            </div>
+            <div class="monedaAConvertir">
+                <h3>Moneda a convertir</h2>
+                <select name="money" id="currency">
+                    <option value="uf">UF</option>
+                    <option value="dolar">Dolar</option>
+                    <option value="arg">Arg</option>
+                    <option value="euro">Euro</option>
+                    <option value="ipc">IPC</option>
+                </select>
+            </div>
+            <div class="buttonContainer">
+                <button id="converterBtn">Buscar</button>
+                <p id="result">...</p>
+            </div>
+            <canvas id="currencyChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    <script>
+        const converterBtn=document.getElementById('converterBtn');
+        const inputAmount=document.getElementById('amount');
+        const currencySelect=document.getElementById('currency');
+        const resultadoP=document.getElementById('result');
+        const ctx=document.getElementById('currencyChart');
+        let chart;
+
+        //Función de la gráfica
+        async function chartData(currency) {
+            try{
+                const res= await fetch(`https://mindicador.cl/api/${currency}`);
+                const data=await res.json();
+
+                //Filtrar 10 días
+                const last10Days=data.serie.slice(0,10).reverse();
+
+
+                const labels=last10Days.map(day=>new Date(day.fecha).toLocaleDateString());
+                const values=last10Days.map(day=>day.valor);
+
+                chart=new Chart(ctx,{
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `Historial de los últimos 10 días (${currency.toUpperCase()})`,
+                            data: values,
+                            borderColor: 'rgba(75,192,192,1)',
+                            backgroundColor: 'rgba(75,192,192,0.2)',
+                            borderWidth:2
+                        }]
+                    }
+                });
+            }catch (error){
+                console.error("Error al obtener los datos históricos: ",error);
+                resultadoP.textContent="Error al obtener los datos históricos.";
+            }
+        }
+
+        //Función obtener datos API y actualizar conversión
+        async function convertCurrency() {
+            const amount=parseFloat(inputAmount.value);
+            const currency=currencySelect.value;
+
+            //Validar la cantidad ingresada
+            if (isNaN(amount) || amount<=0){
+                resultadoP.textContent="Ingrese un monto válido en CLP";
+                return;
+            }
+
+            try{
+                //Fetch API
+                const res=await fetch('https://mindicador.cl/api/');
+                const data=await res.json();
+
+                //Verificacion de moneda si existe
+                if (!data[currency]){
+                    resultadoP.textContent="Moneda no disponible, no se puede convertir";
+                    return;
+                }
+                
+                const exchangeRate=data[currency].valor;
+                const convertedAmount=amount/exchangeRate;
+
+                resultadoP.textContent=`${amount} CLP son aproximadamente ${convertedAmount.toFixed(2)} ${currency.toUpperCase()}`
+
+                //Llamar función gráfica
+                await chartData(currency);
+                
+            }catch(error){
+                console.log(error);
+                document.body.innerHTML=e;
+            }
+        }
+
+        converterBtn.addEventListener('click',convertCurrency);
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+body{
+    background-color: #18181a;
+}
+
+body p{
+    color: aqua;
+}
+
+body h2,h3{
+    color: white;
+}
+
+.allContainer{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+
+.convertidorContainer{
+    background-color: rgb(125, 119, 119);
+    width: 300px;
+    border-radius: 7px;
+}
+
+.buttonContainer{
+    padding-top: 1.5rem;
+}
+
+.buttonContainer button{
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: rgb(131, 168, 237);
+    color: white;
+}
